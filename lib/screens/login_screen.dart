@@ -1,13 +1,15 @@
-import 'dart:convert';
+// ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:netvetta/constants/api_constants.dart';
-import 'package:netvetta/helpers/snackbar_helper.dart';
-import 'package:netvetta/screens/pages_screen.dart';
-import 'package:netvetta/screens/pages_screen.dart';
-import 'package:netvetta/services/local_storage_service.dart';
-import 'package:netvetta/widgets/custom_textfield_widget.dart';
-import 'package:http/http.dart' as http;
+
+import '../constants/enum_constants.dart';
+import '../constants/message_constants.dart';
+import '../helpers/snackbar_helper.dart';
+import '../models/user_model.dart';
+import '../services/auth_service.dart';
+import '../services/storage_service.dart';
+import '../widgets/custom_textfield_widget.dart';
+import 'pages_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -20,63 +22,81 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  String correctPhoneNumber = '5325682383';
-  String correctPassword = '1212';
+  //bool isLoginButtonPressed = false;
 
-  @override
-  void initState() {
-    super.initState();
+  bool get isAnyInputFieldBlank {
+    if (phoneController.text.isEmpty || passwordController.text.isEmpty) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
-  Future<void> login() async {
+  Future<void> onLoginButtonPressed() async {
+    //print('--------PRESSED---------');
+    if (isAnyInputFieldBlank) {
+      SnackBarHelper.showErrorSnackBar(
+        context,
+        MessageConstants.fillInTheRequiredFields,
+      );
+      return;
+    }
+
     final String phoneNumber = phoneController.text.trim();
     final String password = passwordController.text.trim();
 
-    if (phoneNumber == correctPhoneNumber && password == correctPassword) {
-      SnackBarHelper.showSuccessSnackBar(context);
-      LocalStorageService.phoneNumber = correctPhoneNumber;
-      LocalStorageService.password = correctPassword;
-      LocalStorageService.isLoggedIn = true;
-      navigateToPagesScreen();
-    } else {
-      SnackBarHelper.showErrorSnackBar(context);
-    }
-
-    /*final response = await http.post(
-      Uri.parse(ApiConstants.login),
-      body: {
-        'user_phone': phoneNumber,
-        'user_password': password,
-      },
+    final User user = User(
+      kk: 'netvetta',
+      phoneNumber: phoneNumber,
+      password: password,
     );
 
-    if (response.statusCode == 200) {
-      final result = json.decode(response.body);
-      if (result['status'] == 'success') {
-        // ignore: use_build_context_synchronously
-        SnackBarHelper.showSuccessSnackbar(
+    final loginStatus = await AuthService().login(user);
+
+    switch (loginStatus) {
+      case LoginSatus.success:
+        //setState(() => isLoginButtonPressed = true);
+        saveToStorage(phoneNumber, password);
+        await navigateToPagesScreen();
+        SnackBarHelper.showSuccessSnackBar(
           context,
-          'Başarılı bir şekide giriş yaptın!',
+          MessageConstants.loggedInSuccessfully,
         );
-      } else {
-        // ignore: use_build_context_synchronously
-        SnackBarHelper.showErrorSnackbar(
+        break;
+      case LoginSatus.fail:
+        SnackBarHelper.showErrorSnackBar(
           context,
-          'Hata oluştu, tekrar deneyin!',
+          MessageConstants.incorrectCredentials,
         );
-      }
-    }*/
+        break;
+      case LoginSatus.error:
+        SnackBarHelper.showErrorSnackBar(
+          context,
+          MessageConstants.anErrorOccured,
+        );
+        break;
+      case LoginSatus.exception:
+        SnackBarHelper.showErrorSnackBar(
+          context,
+          MessageConstants.anErrorOccured,
+        );
+        break;
+    }
   }
 
   Future<void> navigateToPagesScreen() async {
-    //await Future.delayed(const Duration(seconds: 1));
-    // ignore: use_build_context_synchronously
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => const PagesScreen(),
       ),
     );
+  }
+
+  void saveToStorage(String phoneNumber, password) {
+    StorageService.phoneNumber = phoneNumber;
+    StorageService.password = password;
+    StorageService.isLoggedIn = true;
   }
 
   @override
@@ -105,38 +125,26 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget get netvettaLogo {
-    return Row(
+    return const Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Image.asset(
-          'assets/icons/gear.png',
-          width: 28,
-          color: const Color(0xff2A3F54),
+        Icon(
+          Icons.settings,
+          size: 32,
+          color: Color(0xff2A3F54),
         ),
-        const SizedBox(width: 10),
-        const Text(
+        SizedBox(width: 10),
+        Text(
           'Netvetta',
           style: TextStyle(
             color: Color(0xff2A3F54),
             fontWeight: FontWeight.w500,
-            fontSize: 28,
+            fontSize: 32,
           ),
         ),
       ],
     );
   }
-
-  /*Widget get loginText {
-    return const Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        'Giriş',
-        style: TextStyle(
-          fontSize: 28,
-        ),
-      ),
-    );
-  }*/
 
   Widget get phoneNumberField {
     return CustomTextField(
@@ -144,6 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
       hintText: 'Cep Telefonu',
       obscureText: false,
       inputAction: TextInputAction.next,
+      //maxLength: 10,
     );
   }
 
@@ -153,12 +162,14 @@ class _LoginScreenState extends State<LoginScreen> {
       hintText: 'Şifre',
       obscureText: true,
       inputAction: TextInputAction.done,
+      //maxLength: 4,
     );
   }
 
   Widget get loginButton {
     return MaterialButton(
-      onPressed: login,
+      //onPressed: isLoginButtonPressed ? () {} : onLoginButtonPressed,
+      onPressed: onLoginButtonPressed,
       minWidth: double.infinity,
       height: 48,
       color: const Color(0xff2A3F54),

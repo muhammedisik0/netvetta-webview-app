@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CustomTextField extends StatelessWidget {
   const CustomTextField({
@@ -7,18 +8,24 @@ class CustomTextField extends StatelessWidget {
     required this.hintText,
     required this.obscureText,
     required this.inputAction,
+    //required this.maxLength,
   }) : super(key: key);
 
   final TextEditingController controller;
   final String hintText;
   final bool obscureText;
   final TextInputAction inputAction;
+  //final int maxLength;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       cursorColor: const Color(0xff2A3F54),
       obscureText: obscureText,
+      //maxLength: maxLength,
+      inputFormatters: [
+        FilteringTextInputFormatter.deny(RegExp(r'\s')), // Deny spaces
+      ],
       keyboardType: TextInputType.number,
       textInputAction: inputAction,
       controller: controller,

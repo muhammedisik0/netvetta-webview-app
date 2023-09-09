@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:netvetta/screens/pages_screen.dart';
-import 'package:netvetta/screens/login_screen.dart';
-import 'package:netvetta/services/local_storage_service.dart';
+
+import '../services/storage_service.dart';
+import 'login_screen.dart';
+import 'pages_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -23,27 +24,28 @@ class _SplashScreenState extends State<SplashScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            LocalStorageService.isLoggedIn ? const PagesScreen() : const LoginScreen(),
+        builder: (context) => StorageService.isLoggedIn
+            ? const PagesScreen()
+            : const LoginScreen(),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xff2A3F54),
+    return const Scaffold(
+      backgroundColor: Color(0xff2A3F54),
       body: Center(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              'assets/icons/gear.png',
-              width: 36,
+            Icon(
+              Icons.settings,
+              size: 36,
               color: Colors.white,
             ),
-            const SizedBox(width: 10),
-            const Text(
+            SizedBox(width: 10),
+            Text(
               'Netvetta',
               style: TextStyle(
                 color: Colors.white,

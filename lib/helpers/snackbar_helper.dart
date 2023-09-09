@@ -1,28 +1,42 @@
 import 'package:flutter/material.dart';
 
 class SnackBarHelper {
-  static void showErrorSnackBar(BuildContext context) {
-    const snackBar = SnackBar(
+  static void showErrorSnackBar(BuildContext context, String text) {
+    final snackBar = SnackBar(
       backgroundColor: Colors.red,
-      duration: Duration(seconds: 3),
+      duration: const Duration(seconds: 3),
       behavior: SnackBarBehavior.floating,
       content: Text(
-        'Giriş bilgileri yanlış, tekrar deneyin!',
-        style: TextStyle(fontSize: 16),
+        text,
+        style: const TextStyle(fontSize: 16),
       ),
     );
 
     show(context, snackBar);
   }
 
-  static void showSuccessSnackBar(BuildContext context) {
-    const snackBar = SnackBar(
+  static void showSuccessSnackBar(BuildContext context, String text) {
+    final snackBar = SnackBar(
       backgroundColor: Colors.green,
-      duration: Duration(seconds: 3),
+      duration: const Duration(seconds: 3),
       behavior: SnackBarBehavior.floating,
       content: Text(
-        'Başarılı bir şekide giriş yaptın!',
-        style: TextStyle(fontSize: 16),
+        text,
+        style: const TextStyle(fontSize: 16),
+      ),
+    );
+
+    show(context, snackBar);
+  }
+
+  static void showWarningSnackBar(BuildContext context, String text) {
+    final snackBar = SnackBar(
+      backgroundColor: const Color(0xffE4A11B),
+      duration: const Duration(seconds: 3),
+      behavior: SnackBarBehavior.floating,
+      content: Text(
+        text,
+        style: const TextStyle(fontSize: 16),
       ),
     );
 
@@ -31,7 +45,9 @@ class SnackBarHelper {
 
   static void show(BuildContext context, SnackBar snackBar) {
     final scaffoldMessengerState = ScaffoldMessenger.of(context);
-    if (scaffoldMessengerState.mounted) scaffoldMessengerState.hideCurrentSnackBar();
+    if (scaffoldMessengerState.mounted) {
+      scaffoldMessengerState.hideCurrentSnackBar();
+    }
     scaffoldMessengerState.showSnackBar(snackBar);
   }
 }

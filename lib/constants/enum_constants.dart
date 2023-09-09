@@ -1,1 +1,1 @@
-enum Routes { home, basket, account }
+enum LoginSatus { success, fail, error, exception }

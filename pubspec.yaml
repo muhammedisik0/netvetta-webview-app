@@ -13,9 +13,10 @@ dependencies:
     sdk: flutter
 
   webview_flutter: ^4.2.4
-  cupertino_icons: ^1.0.2
   http: ^1.1.0
   get_storage: ^2.1.1
+  flutter_no_internet_widget: ^1.0.0+18-dev.1
+  cupertino_icons: ^1.0.2
 
 dev_dependencies:
   flutter_test:
