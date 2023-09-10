@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../constants/route_constants.dart';
 import '../constants/uri_constants.dart';
 import '../services/storage_service.dart';
 import '../utils/globals.dart';
 import '../utils/url_utils.dart';
 import '../widgets/bottom_navbar_item.dart';
 import '../widgets/loading_widget.dart';
-import 'login_screen.dart';
 
 class PagesScreen extends StatefulWidget {
   const PagesScreen({Key? key}) : super(key: key);
@@ -29,6 +29,12 @@ class _PagesScreenState extends State<PagesScreen> {
   String get basketUrl => '${UriConstants.basket}/$userId';
   String get accountUrl => '${UriConstants.account}/$userId';
 
+  NavigationDelegate get navigationDelegate => NavigationDelegate(
+        onNavigationRequest: onNavigationRequest,
+        onPageStarted: onPageStarted,
+        onPageFinished: onPageFinished,
+      );
+
   @override
   void initState() {
     super.initState();
@@ -44,20 +50,18 @@ class _PagesScreenState extends State<PagesScreen> {
     webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onNavigationRequest: onNavigationRequest,
-          onPageStarted: onPageStarted,
-          onPageFinished: onPageFinished,
-        ),
-      )
+      ..setNavigationDelegate(navigationDelegate)
       ..loadRequest(Uri.parse(loginUrl));
   }
 
   FutureOr<NavigationDecision> onNavigationRequest(request) {
     if (request.url == loginUrl) {
       setState(() => isLoading = true);
-      navigateToLoginScreen();
+      StorageService.clearStorage();
+      Navigator.pushReplacementNamed(
+        context,
+        RouteConstants.login,
+      );
     } else if (request.url == homeUrl) {
       updateIndex(0);
     } else if (request.url == basketUrl) {
@@ -73,8 +77,8 @@ class _PagesScreenState extends State<PagesScreen> {
   }
 
   void onPageFinished(String url) {
-    if (url == loginUrl && StorageService.isLoggedIn) {
-      logInFromWebView();
+    if (url == loginUrl) {
+      if (StorageService.isLoggedIn) logInFromWebView();
     }
     checkIfStillLoading(url);
   }
@@ -106,40 +110,28 @@ class _PagesScreenState extends State<PagesScreen> {
   }
 
   void logInFromWebView() {
-    webViewController.runJavaScript('''
+    final String javaScriptCode = '''
       var phoneField = document.querySelector("input[name=tel]");
       var passwordField = document.querySelector("input[name=parola]");
       var loginButton = document.querySelector("button");
       phoneField.value = '${StorageService.phoneNumber}';
       passwordField.value = '${StorageService.password}';
       loginButton.click();
-    ''');
+    ''';
+    webViewController.runJavaScript(javaScriptCode);
   }
 
   void checkIfFirstLogin(String url) {
-    if (userId == -1) {
-      if (url.contains(homeUrl)) {
-        userId = extractIdFromUrl(url);
-        StorageService.userId = userId;
-      }
+    if (userId == -1 && url.contains(homeUrl)) {
+      userId = extractIdFromUrl(url);
+      StorageService.userId = userId;
     }
   }
 
   void checkIfStillLoading(String url) {
-    if (isLoading) {
-      if (url.contains(homeUrl)) {
-        setState(() => isLoading = false);
-      }
+    if (isLoading && url.contains(homeUrl)) {
+      setState(() => isLoading = false);
     }
-  }
-
-  void navigateToLoginScreen() {
-    StorageService.clearStorage();
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-      (Route<dynamic> route) => route.isFirst,
-    );
   }
 
   @override

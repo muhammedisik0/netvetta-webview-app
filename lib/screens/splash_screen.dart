@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../constants/route_constants.dart';
 import '../services/storage_service.dart';
-import 'login_screen.dart';
-import 'pages_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -21,13 +20,9 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> navigateToLoginOrPagesScreen() async {
     await Future.delayed(const Duration(seconds: 2));
     // ignore: use_build_context_synchronously
-    Navigator.pushReplacement(
+    Navigator.pushReplacementNamed(
       context,
-      MaterialPageRoute(
-        builder: (context) => StorageService.isLoggedIn
-            ? const PagesScreen()
-            : const LoginScreen(),
-      ),
+      StorageService.isLoggedIn ? RouteConstants.pages : RouteConstants.login,
     );
   }
 

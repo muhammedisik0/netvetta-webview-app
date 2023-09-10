@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 
 import '../constants/enum_constants.dart';
 import '../constants/message_constants.dart';
+import '../constants/route_constants.dart';
 import '../helpers/snackbar_helper.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/custom_textfield_widget.dart';
-import 'pages_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -57,7 +57,10 @@ class _LoginScreenState extends State<LoginScreen> {
       case LoginSatus.success:
         //setState(() => isLoginButtonPressed = true);
         saveToStorage(phoneNumber, password);
-        await navigateToPagesScreen();
+        await Navigator.pushReplacementNamed(
+          context,
+          RouteConstants.pages,
+        );
         SnackBarHelper.showSuccessSnackBar(
           context,
           MessageConstants.loggedInSuccessfully,
@@ -84,15 +87,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> navigateToPagesScreen() async {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const PagesScreen(),
-      ),
-    );
-  }
-
   void saveToStorage(String phoneNumber, password) {
     StorageService.phoneNumber = phoneNumber;
     StorageService.password = password;
@@ -102,24 +96,22 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: body),
-    );
-  }
-
-  Widget get body {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          netvettaLogo,
-          const SizedBox(height: 40),
-          phoneNumberField,
-          const SizedBox(height: 20),
-          passwordField,
-          const SizedBox(height: 20),
-          loginButton,
-        ],
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              netvettaLogo,
+              const SizedBox(height: 40),
+              phoneNumberField,
+              const SizedBox(height: 20),
+              passwordField,
+              const SizedBox(height: 20),
+              loginButton,
+            ],
+          ),
+        ),
       ),
     );
   }
