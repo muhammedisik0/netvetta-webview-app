@@ -1,23 +1,25 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:flutter/material.dart';
-import 'package:netvetta/constants/uri_constants.dart';
+import 'dart:async';
 
-import 'package:netvetta/widgets/custom_button.dart';
-import 'package:netvetta/widgets/social_button.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
-import '../constants/color_constants.dart';
 import '../constants/enum_constants.dart';
 import '../constants/message_constants.dart';
 import '../constants/route_constants.dart';
+import '../constants/uri_constants.dart';
 import '../helpers/snackbar_helper.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
+import '../services/connectivity_service.dart';
 import '../services/storage_service.dart';
+import '../widgets/custom_button.dart';
 import '../widgets/custom_textfield_widget.dart';
+import '../widgets/no_internet_widget.dart';
+import '../widgets/social_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -27,16 +29,46 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final connectivityService = ConnectivityService();
+  late StreamSubscription<ConnectivityResult> connectivitySubscription;
+  bool hasInternet = true;
+
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  String get phoneNumber => phoneNumberController.text.trim();
-  String get password => passwordController.text.trim();
+  @override
+  void initState() {
+    super.initState();
+    checkInternetOnInit();
+    connectivitySubscription =
+        connectivityService.connectivityStream.listen(onResult);
+  }
+
+  @override
+  void dispose() {
+    connectivitySubscription.cancel();
+    super.dispose();
+  }
+
+  Future<void> checkInternetOnInit() async {
+    final result = await connectivityService.connectivityResult;
+    final value = connectivityService.hasInternet(result);
+    setState(() => hasInternet = value);
+  }
+
+  void onResult(ConnectivityResult result) {
+    final value = connectivityService.hasInternet(result);
+    setState(() => hasInternet = value);
+  }
 
   void onLoginButtonPressed() {
     checkIfAnyInputFieldBlank();
     checkLoginStatus();
   }
+
+  String get phoneNumber => phoneNumberController.text.trim();
+
+  String get password => passwordController.text.trim();
 
   Future<void> onSignUpButtonPressed() async {
     final uri = Uri.parse(UriConstants.signUp);
@@ -131,72 +163,53 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-          child: Container(
-            //color: Colors.red,
-            child: Center(
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        netvettaLogo,
-                        const SizedBox(height: 40),
-                        phoneNumberField,
-                        const SizedBox(height: 20),
-                        passwordField,
-                        const SizedBox(height: 20),
-                        loginButton,
-                        const SizedBox(height: 10),
-                        signUpButton,
-                        const SizedBox(height: 20),
-                        divider,
-                        const SizedBox(height: 30),
-                        whatIsNetvettaButton,
-                      ],
-                    ),
-                  ),
-                  socialButtons
-                ],
-              ),
-            ),
-          ),
-        ),
+        child: hasInternet ? onlineWidget : offlineWidget,
       ),
     );
   }
 
-  Widget get netvettaLogo {
-    return const Column(
-      //crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'NETVETTA',
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 28,
-            color: Colors.black,
-            letterSpacing: 1.2,
+  Widget get onlineWidget {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+      child: Column(
+        children: [
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                netvettaLogo,
+                const SizedBox(height: 40),
+                phoneNumberField,
+                const SizedBox(height: 20),
+                passwordField,
+                const SizedBox(height: 20),
+                loginButton,
+                const SizedBox(height: 10),
+                signUpButton,
+                const SizedBox(height: 20),
+                divider,
+                const SizedBox(height: 30),
+                whatIsNetvettaButton,
+              ],
+            ),
           ),
-        ),
+          socialButtons
+        ],
+      ),
+    );
+  }
 
-        /*Icon(
-          FontAwesomeIcons.gear,
-          size: 24,
-          color: Colors.black,
-        ),
-        SizedBox(width: 10),
-        Text(
-          'Netvetta',
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 28,
-            color: Colors.black,
-          ),
-        ),*/
-      ],
+  Widget get offlineWidget => const NoInternetWidget();
+
+  Widget get netvettaLogo {
+    return const Text(
+      'NETVETTA',
+      style: TextStyle(
+        fontWeight: FontWeight.w500,
+        fontSize: 28,
+        color: Colors.black,
+        letterSpacing: 1.2,
+      ),
     );
   }
 

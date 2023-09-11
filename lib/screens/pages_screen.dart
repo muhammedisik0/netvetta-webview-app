@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -7,11 +8,12 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../constants/color_constants.dart';
 import '../constants/route_constants.dart';
 import '../constants/uri_constants.dart';
+import '../services/connectivity_service.dart';
 import '../services/storage_service.dart';
-import '../utils/globals.dart';
 import '../utils/url_utils.dart';
 import '../widgets/bottom_navbar_item.dart';
 import '../widgets/loading_widget.dart';
+import '../widgets/no_internet_widget.dart';
 
 class PagesScreen extends StatefulWidget {
   const PagesScreen({Key? key}) : super(key: key);
@@ -21,10 +23,48 @@ class PagesScreen extends StatefulWidget {
 }
 
 class _PagesScreenState extends State<PagesScreen> {
+  final connectivityService = ConnectivityService();
+  late StreamSubscription<ConnectivityResult> connectivitySubscription;
+  bool hasInternet = true;
+
   late final WebViewController webViewController;
   int currentIndex = 0;
   bool isLoading = true;
   late int userId;
+
+  @override
+  void initState() {
+    super.initState();
+    checkInternetOnInit();
+    connectivitySubscription =
+        connectivityService.connectivityStream.listen(onResult);
+
+    userId = StorageService.userId;
+
+    webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
+      ..setNavigationDelegate(navigationDelegate)
+      ..loadRequest(Uri.parse(loginUrl));
+  }
+
+  @override
+  void dispose() {
+    connectivitySubscription.cancel();
+    super.dispose();
+  }
+
+  Future<void> checkInternetOnInit() async {
+    final result = await connectivityService.connectivityResult;
+    final bool value = connectivityService.hasInternet(result);
+    setState(() => hasInternet = value);
+  }
+
+  void onResult(ConnectivityResult result) {
+    final value = connectivityService.hasInternet(result);
+    setState(() => hasInternet = value);
+    checkRequest(currentIndex);
+  }
 
   String get loginUrl => UriConstants.login;
   String get homeUrl => UriConstants.home;
@@ -36,25 +76,6 @@ class _PagesScreenState extends State<PagesScreen> {
         onPageStarted: onPageStarted,
         onPageFinished: onPageFinished,
       );
-
-  @override
-  void initState() {
-    super.initState();
-    userId = StorageService.userId;
-
-    hasInternet.addListener(() async {
-      if (hasInternet.value && isLoading) {
-        await loadRequest(homeUrl);
-        setState(() => isLoading = false);
-      }
-    });
-
-    webViewController = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(navigationDelegate)
-      ..loadRequest(Uri.parse(loginUrl));
-  }
 
   FutureOr<NavigationDecision> onNavigationRequest(request) {
     if (request.url == loginUrl) {
@@ -146,26 +167,28 @@ class _PagesScreenState extends State<PagesScreen> {
 
   Widget get body {
     return SafeArea(
-      child: isLoading
-          ? const LoadingWidget()
-          : WebViewWidget(controller: webViewController),
+      child: hasInternet ? onlineWidget : offlineWidget,
+    );
+  }
+
+  Widget get onlineWidget {
+    return isLoading
+        ? const LoadingWidget()
+        : WebViewWidget(controller: webViewController);
+  }
+
+  Widget get offlineWidget => const NoInternetWidget();
+
+  Widget get checkingWidget {
+    return const Center(
+      child: CircularProgressIndicator(color: Colors.black),
     );
   }
 
   Widget get bottomNavigationBar {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: const BoxDecoration(
-        color: ColorConstants.primaryColor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey,
-            blurRadius: 10,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
+      decoration: navBarDecoration,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
@@ -189,6 +212,20 @@ class _PagesScreenState extends State<PagesScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  BoxDecoration get navBarDecoration {
+    return const BoxDecoration(
+      color: ColorConstants.primaryColor,
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey,
+          blurRadius: 10,
+          offset: Offset(0, -2),
+        ),
+      ],
     );
   }
 }

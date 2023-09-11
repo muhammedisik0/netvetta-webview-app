@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_no_internet_widget/flutter_no_internet_widget.dart';
 import 'package:get_secure_storage/get_secure_storage.dart';
 
-import 'constants/color_constants.dart';
 import 'constants/route_constants.dart';
 import 'screens/login_screen.dart';
 import 'screens/pages_screen.dart';
 import 'screens/splash_screen.dart';
-import 'utils/globals.dart';
-import 'widgets/no_internet_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,22 +17,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InternetWidget(
-      whenOffline: () => hasInternet.value = false,
-      whenOnline: () => hasInternet.value = true,
-      loadingWidget: const Center(
-        child: CircularProgressIndicator(color: Colors.black),
-      ),
-      offline: const FullScreenWidget(child: NoInternetWidget()),
-      online: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        initialRoute: RouteConstants.splash,
-        routes: {
-          RouteConstants.splash: (context) => const SplashScreen(),
-          RouteConstants.login: (context) => const LoginScreen(),
-          RouteConstants.pages: (context) => const PagesScreen(),
-        },
-      ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      initialRoute: RouteConstants.splash,
+      routes: {
+        RouteConstants.splash: (context) => const SplashScreen(),
+        RouteConstants.login: (context) => const LoginScreen(),
+        RouteConstants.pages: (context) => const PagesScreen(),
+      },
     );
   }
 }

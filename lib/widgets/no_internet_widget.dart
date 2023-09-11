@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../constants/color_constants.dart';
 import '../constants/message_constants.dart';
 
 class NoInternetWidget extends StatelessWidget {
@@ -19,7 +18,7 @@ class NoInternetWidget extends StatelessWidget {
           Icon(
             Icons.wifi_off_rounded,
             size: 180,
-            color: Color(0xffff8000),
+            color: Color(0xffE4A11B),
           ),
           SizedBox(height: 20),
           Text(
