@@ -20,7 +20,7 @@ class CustomTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      cursorColor: const Color(0xff2A3F54),
+      cursorColor: Colors.black,
       obscureText: obscureText,
       //maxLength: maxLength,
       inputFormatters: [
@@ -41,7 +41,7 @@ class CustomTextField extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(
             width: 1.5,
-            color: Color(0xff2A3F54),
+            color: Colors.black,
           ),
         ),
         hintText: hintText,

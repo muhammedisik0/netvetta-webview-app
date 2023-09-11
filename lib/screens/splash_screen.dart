@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../constants/color_constants.dart';
 import '../constants/route_constants.dart';
 import '../services/storage_service.dart';
 
@@ -28,15 +30,19 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xff2A3F54),
+    return Scaffold(
+      backgroundColor: ColorConstants.primaryColor,
       body: Center(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.settings,
-              size: 36,
+            Image.asset(
+              'assets/images/app-logo.png',
+              width: 240,
+            ),
+            /*Icon(
+              FontAwesomeIcons.gear,
+              size: 30,
               color: Colors.white,
             ),
             SizedBox(width: 10),
@@ -47,7 +53,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 fontWeight: FontWeight.w500,
                 fontSize: 36,
               ),
-            ),
+            ),*/
           ],
         ),
       ),

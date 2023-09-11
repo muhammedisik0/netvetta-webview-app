@@ -1,7 +1,15 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:netvetta/constants/uri_constants.dart';
 
+import 'package:netvetta/widgets/custom_button.dart';
+import 'package:netvetta/widgets/social_button.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+
+import '../constants/color_constants.dart';
 import '../constants/enum_constants.dart';
 import '../constants/message_constants.dart';
 import '../constants/route_constants.dart';
@@ -19,43 +27,68 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  //bool isLoginButtonPressed = false;
+  String get phoneNumber => phoneNumberController.text.trim();
+  String get password => passwordController.text.trim();
 
-  bool get isAnyInputFieldBlank {
-    if (phoneController.text.isEmpty || passwordController.text.isEmpty) {
-      return true;
+  void onLoginButtonPressed() {
+    checkIfAnyInputFieldBlank();
+    checkLoginStatus();
+  }
+
+  Future<void> onSignUpButtonPressed() async {
+    final uri = Uri.parse(UriConstants.signUp);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     } else {
-      return false;
+      throw 'Could not launch!';
     }
   }
 
-  Future<void> onLoginButtonPressed() async {
-    //print('--------PRESSED---------');
-    if (isAnyInputFieldBlank) {
+  void onWhatIsNetvettaButtonPressed() {}
+
+  Future<void> onInstagramButtonPressed() async {
+    final uri = Uri.parse(UriConstants.instagram);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      throw 'Could not launch!';
+    }
+  }
+
+  Future<void> onFacebookButtonPressed() async {
+    final uri = Uri.parse(UriConstants.facebook);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      throw 'Could not launch!';
+    }
+  }
+
+  void checkIfAnyInputFieldBlank() {
+    if (phoneNumber.isEmpty || password.isEmpty) {
       SnackBarHelper.showErrorSnackBar(
         context,
         MessageConstants.fillInTheRequiredFields,
       );
       return;
     }
+  }
 
-    final String phoneNumber = phoneController.text.trim();
-    final String password = passwordController.text.trim();
-
+  Future<LoginSatus> get loginStatus async {
     final User user = User(
       kk: 'netvetta',
       phoneNumber: phoneNumber,
       password: password,
     );
+    return await AuthService().login(user);
+  }
 
-    final loginStatus = await AuthService().login(user);
-
-    switch (loginStatus) {
+  Future<void> checkLoginStatus() async {
+    switch (await loginStatus) {
       case LoginSatus.success:
-        //setState(() => isLoginButtonPressed = true);
         saveToStorage(phoneNumber, password);
         await Navigator.pushReplacementNamed(
           context,
@@ -96,20 +129,39 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              netvettaLogo,
-              const SizedBox(height: 40),
-              phoneNumberField,
-              const SizedBox(height: 20),
-              passwordField,
-              const SizedBox(height: 20),
-              loginButton,
-            ],
+          child: Container(
+            //color: Colors.red,
+            child: Center(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        netvettaLogo,
+                        const SizedBox(height: 40),
+                        phoneNumberField,
+                        const SizedBox(height: 20),
+                        passwordField,
+                        const SizedBox(height: 20),
+                        loginButton,
+                        const SizedBox(height: 10),
+                        signUpButton,
+                        const SizedBox(height: 20),
+                        divider,
+                        const SizedBox(height: 30),
+                        whatIsNetvettaButton,
+                      ],
+                    ),
+                  ),
+                  socialButtons
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -117,31 +169,41 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget get netvettaLogo {
-    return const Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return const Column(
+      //crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          Icons.settings,
-          size: 32,
-          color: Color(0xff2A3F54),
+        Text(
+          'NETVETTA',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 28,
+            color: Colors.black,
+            letterSpacing: 1.2,
+          ),
+        ),
+
+        /*Icon(
+          FontAwesomeIcons.gear,
+          size: 24,
+          color: Colors.black,
         ),
         SizedBox(width: 10),
         Text(
           'Netvetta',
           style: TextStyle(
-            color: Color(0xff2A3F54),
             fontWeight: FontWeight.w500,
-            fontSize: 32,
+            fontSize: 28,
+            color: Colors.black,
           ),
-        ),
+        ),*/
       ],
     );
   }
 
   Widget get phoneNumberField {
     return CustomTextField(
-      controller: phoneController,
-      hintText: 'Cep Telefonu',
+      controller: phoneNumberController,
+      hintText: '(502xxxxxxx)',
       obscureText: false,
       inputAction: TextInputAction.next,
       //maxLength: 10,
@@ -159,19 +221,56 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget get loginButton {
-    return MaterialButton(
-      //onPressed: isLoginButtonPressed ? () {} : onLoginButtonPressed,
+    return CustomButton(
       onPressed: onLoginButtonPressed,
-      minWidth: double.infinity,
+      text: 'Giriş',
+      color: const Color(0xff009688),
       height: 48,
-      color: const Color(0xff2A3F54),
-      child: const Text(
-        'Giriş',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 16,
+    );
+  }
+
+  Widget get signUpButton {
+    return CustomButton(
+      onPressed: onSignUpButtonPressed,
+      text: 'Üye Ol',
+      color: const Color(0xff673AB7),
+      height: 48,
+    );
+  }
+
+  Divider get divider {
+    return const Divider(
+      color: Color(0xffCCCCCC),
+      thickness: 1,
+      height: 0,
+    );
+  }
+
+  Widget get whatIsNetvettaButton {
+    return CustomButton(
+      onPressed: onWhatIsNetvettaButtonPressed,
+      text: 'Netvetta Nedir?',
+      color: const Color(0xff1565C0),
+      height: 60,
+    );
+  }
+
+  Widget get socialButtons {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SocialButton(
+          onPressed: onInstagramButtonPressed,
+          icon: FontAwesomeIcons.instagram,
+          color: const Color(0xffc2185b),
         ),
-      ),
+        const SizedBox(width: 20),
+        SocialButton(
+          onPressed: onFacebookButtonPressed,
+          icon: FontAwesomeIcons.facebook,
+          color: const Color(0xff1877F2),
+        ),
+      ],
     );
   }
 }

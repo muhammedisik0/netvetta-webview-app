@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_no_internet_widget/flutter_no_internet_widget.dart';
 import 'package:get_secure_storage/get_secure_storage.dart';
 
+import 'constants/color_constants.dart';
 import 'constants/route_constants.dart';
 import 'screens/login_screen.dart';
 import 'screens/pages_screen.dart';
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
       whenOffline: () => hasInternet.value = false,
       whenOnline: () => hasInternet.value = true,
       loadingWidget: const Center(
-        child: CircularProgressIndicator(color: Color(0xff2A3F54)),
+        child: CircularProgressIndicator(color: Colors.black),
       ),
       offline: const FullScreenWidget(child: NoInternetWidget()),
       online: MaterialApp(

@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../constants/color_constants.dart';
 import '../constants/route_constants.dart';
 import '../constants/uri_constants.dart';
 import '../services/storage_service.dart';
@@ -154,27 +156,34 @@ class _PagesScreenState extends State<PagesScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: const BoxDecoration(
-        color: Color(0xff2A3F54),
+        color: ColorConstants.primaryColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey,
+            blurRadius: 10,
+            offset: Offset(0, -2),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           BottomNavBarItem(
             onTap: () => onNavBarButtonTap(0),
-            icon: Icons.home,
+            icon: FontAwesomeIcons.house,
             text: 'Ana Sayfa',
             isSelected: currentIndex == 0,
           ),
           BottomNavBarItem(
             onTap: () => onNavBarButtonTap(1),
-            icon: Icons.shopping_basket,
+            icon: FontAwesomeIcons.basketShopping,
             text: 'Sepet',
             isSelected: currentIndex == 1,
           ),
           BottomNavBarItem(
             onTap: () => onNavBarButtonTap(2),
-            icon: Icons.account_box,
+            icon: FontAwesomeIcons.solidUser,
             text: 'Hesap',
             isSelected: currentIndex == 2,
           ),

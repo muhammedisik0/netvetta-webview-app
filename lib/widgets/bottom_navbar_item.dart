@@ -23,13 +23,14 @@ class BottomNavBarItem extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 30,
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+            size: 24,
+            color: isSelected ? Colors.black : Colors.black45,
           ),
+          const SizedBox(height: 2),
           Text(
             text,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+              color: isSelected ? Colors.black : Colors.black45,
             ),
           ),
         ],

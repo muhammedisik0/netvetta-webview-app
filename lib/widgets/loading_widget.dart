@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../constants/color_constants.dart';
+
 class LoadingWidget extends StatelessWidget {
   const LoadingWidget({Key? key}) : super(key: key);
 
@@ -9,7 +11,7 @@ class LoadingWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: Color(0xff2A3F54)),
+          CircularProgressIndicator(color: Colors.black),
           SizedBox(height: 20),
           Text('Yükleniyor...'),
         ],

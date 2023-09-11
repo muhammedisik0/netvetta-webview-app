@@ -12,7 +12,7 @@ class SnackBarHelper {
       ),
     );
 
-    show(context, snackBar);
+    _show(context, snackBar);
   }
 
   static void showSuccessSnackBar(BuildContext context, String text) {
@@ -26,7 +26,7 @@ class SnackBarHelper {
       ),
     );
 
-    show(context, snackBar);
+    _show(context, snackBar);
   }
 
   static void showWarningSnackBar(BuildContext context, String text) {
@@ -40,10 +40,10 @@ class SnackBarHelper {
       ),
     );
 
-    show(context, snackBar);
+    _show(context, snackBar);
   }
 
-  static void show(BuildContext context, SnackBar snackBar) {
+  static void _show(BuildContext context, SnackBar snackBar) {
     final scaffoldMessengerState = ScaffoldMessenger.of(context);
     if (scaffoldMessengerState.mounted) {
       scaffoldMessengerState.hideCurrentSnackBar();
