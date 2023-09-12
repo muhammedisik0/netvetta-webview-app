@@ -53,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> checkInternetOnInit() async {
     final result = await connectivityService.connectivityResult;
     final value = connectivityService.hasInternet(result);
-    setState(() => hasInternet = value);
+    if (!value) setState(() => hasInternet = value);
   }
 
   void onResult(ConnectivityResult result) {
@@ -61,14 +61,20 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => hasInternet = value);
   }
 
-  void onLoginButtonPressed() {
-    checkIfAnyInputFieldBlank();
-    checkLoginStatus();
-  }
-
   String get phoneNumber => phoneNumberController.text.trim();
 
   String get password => passwordController.text.trim();
+
+  void onLoginButtonPressed() {
+    if (phoneNumber.isEmpty || password.isEmpty) {
+      SnackBarHelper.showErrorSnackBar(
+        context,
+        MessageConstants.fillInTheRequiredFields,
+      );
+      return;
+    }
+    checkLoginStatus();
+  }
 
   Future<void> onSignUpButtonPressed() async {
     final uri = Uri.parse(UriConstants.signUp);
@@ -99,16 +105,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void checkIfAnyInputFieldBlank() {
-    if (phoneNumber.isEmpty || password.isEmpty) {
-      SnackBarHelper.showErrorSnackBar(
-        context,
-        MessageConstants.fillInTheRequiredFields,
-      );
-      return;
-    }
-  }
-
   Future<LoginSatus> get loginStatus async {
     final User user = User(
       kk: 'netvetta',
@@ -119,7 +115,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> checkLoginStatus() async {
-    switch (await loginStatus) {
+    final value = await loginStatus;
+    switch (value) {
       case LoginSatus.success:
         saveToStorage(phoneNumber, password);
         await Navigator.pushReplacementNamed(

@@ -35,11 +35,11 @@ class _PagesScreenState extends State<PagesScreen> {
   @override
   void initState() {
     super.initState();
+    userId = StorageService.userId;
+
     checkInternetOnInit();
     connectivitySubscription =
         connectivityService.connectivityStream.listen(onResult);
-
-    userId = StorageService.userId;
 
     webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)

@@ -32,28 +32,9 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: ColorConstants.primaryColor,
       body: Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/images/app-logo.png',
-              width: 240,
-            ),
-            /*Icon(
-              FontAwesomeIcons.gear,
-              size: 30,
-              color: Colors.white,
-            ),
-            SizedBox(width: 10),
-            Text(
-              'Netvetta',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-                fontSize: 36,
-              ),
-            ),*/
-          ],
+        child: Image.asset(
+          'assets/images/app-logo.png',
+          width: 240,
         ),
       ),
     );
