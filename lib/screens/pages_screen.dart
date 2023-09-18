@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -10,7 +12,7 @@ import '../constants/route_constants.dart';
 import '../constants/uri_constants.dart';
 import '../services/connectivity_service.dart';
 import '../services/storage_service.dart';
-import '../utils/url_utils.dart';
+import '../utils/function_utils.dart';
 import '../widgets/bottom_navbar_item.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/no_internet_widget.dart';
@@ -32,12 +34,30 @@ class _PagesScreenState extends State<PagesScreen> {
   bool isLoading = true;
   late int userId;
 
+  /*Future<void> checkForNotification() async {
+    NotificationAppLaunchDetails? details = await NotificationService()
+        .notificationsPlugin
+        .getNotificationAppLaunchDetails();
+
+    if (details != null) {
+      if (details.didNotificationLaunchApp) {
+        NotificationResponse? response = details.notificationResponse;
+
+        if (response != null) {
+          String? payload = response.payload;
+          log("Notification Payload: $payload");
+        }
+      }
+    }
+  }*/
+
   @override
   void initState() {
     super.initState();
     userId = StorageService.userId;
 
     checkInternetOnInit();
+
     connectivitySubscription =
         connectivityService.connectivityStream.listen(onResult);
 
@@ -71,20 +91,22 @@ class _PagesScreenState extends State<PagesScreen> {
   String get basketUrl => '${UriConstants.basket}/$userId';
   String get accountUrl => '${UriConstants.account}/$userId';
 
-  NavigationDelegate get navigationDelegate => NavigationDelegate(
-        onNavigationRequest: onNavigationRequest,
-        onPageStarted: onPageStarted,
-        onPageFinished: onPageFinished,
-      );
+  NavigationDelegate get navigationDelegate {
+    return NavigationDelegate(
+      onNavigationRequest: onNavigationRequest,
+      onPageStarted: onPageStarted,
+      onPageFinished: onPageFinished,
+    );
+  }
 
-  FutureOr<NavigationDecision> onNavigationRequest(request) {
+  FutureOr<NavigationDecision> onNavigationRequest(request) async {
     if (request.url == loginUrl) {
-      setState(() => isLoading = true);
-      StorageService.clearStorage();
-      Navigator.pushReplacementNamed(
-        context,
-        RouteConstants.login,
-      );
+      print('loginrequest');
+      //setState(() => isLoading = true);
+      //await Future.delayed(const Duration(seconds: 1));
+      await StorageService.clearStorage();
+      print('storagecleared');
+      //Navigator.pushReplacementNamed(context, RouteConstants.login);
     } else if (request.url == homeUrl) {
       updateIndex(0);
     } else if (request.url == basketUrl) {
@@ -97,11 +119,21 @@ class _PagesScreenState extends State<PagesScreen> {
 
   void onPageStarted(String url) {
     checkIfFirstLogin(url);
+    if (url == loginUrl) {
+      print('loginurlstarting---------');
+    }
   }
 
   void onPageFinished(String url) {
     if (url == loginUrl) {
-      if (StorageService.isLoggedIn) logInFromWebView();
+      print('loginurlfinished------------');
+      if (StorageService.isLoggedIn) {
+        logInFromWebView();
+        print('loggedin: ${StorageService.isLoggedIn}');
+      } else {
+        print('navigatetologin----------');
+        Navigator.pushReplacementNamed(context, RouteConstants.login);
+      }
     }
     checkIfStillLoading(url);
   }
@@ -142,6 +174,7 @@ class _PagesScreenState extends State<PagesScreen> {
       loginButton.click();
     ''';
     webViewController.runJavaScript(javaScriptCode);
+    //print('loginformwebvew--------');
   }
 
   void checkIfFirstLogin(String url) {
@@ -188,7 +221,17 @@ class _PagesScreenState extends State<PagesScreen> {
   Widget get bottomNavigationBar {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: navBarDecoration,
+      decoration: const BoxDecoration(
+        color: ColorConstants.primaryColor,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey,
+            blurRadius: 10,
+            offset: Offset(0, -2),
+          ),
+        ],
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
@@ -210,22 +253,22 @@ class _PagesScreenState extends State<PagesScreen> {
             text: 'Hesap',
             isSelected: currentIndex == 2,
           ),
+          /*BottomNavBarItem(
+            onTap: () {
+              NotificationService().showNotification(
+                id: 3,
+                title: 'Title',
+                body: 'Body',
+                payLoad: 'Payload',
+              );
+              
+            },
+            icon: FontAwesomeIcons.airbnb,
+            text: 'Test',
+            isSelected: currentIndex == 3,
+          ),*/
         ],
       ),
-    );
-  }
-
-  BoxDecoration get navBarDecoration {
-    return const BoxDecoration(
-      color: ColorConstants.primaryColor,
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey,
-          blurRadius: 10,
-          offset: Offset(0, -2),
-        ),
-      ],
     );
   }
 }

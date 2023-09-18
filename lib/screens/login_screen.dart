@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../utils/globals.dart';
 import '../constants/enum_constants.dart';
 import '../constants/message_constants.dart';
 import '../constants/route_constants.dart';
@@ -68,7 +69,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void onLoginButtonPressed() {
     if (phoneNumber.isEmpty || password.isEmpty) {
       SnackBarHelper.showErrorSnackBar(
-        context,
         MessageConstants.fillInTheRequiredFields,
       );
       return;
@@ -118,41 +118,40 @@ class _LoginScreenState extends State<LoginScreen> {
     final value = await loginStatus;
     switch (value) {
       case LoginSatus.success:
-        saveToStorage(phoneNumber, password);
-        await Navigator.pushReplacementNamed(
-          context,
-          RouteConstants.pages,
-        );
+        await saveToStorage(phoneNumber, password);
         SnackBarHelper.showSuccessSnackBar(
-          context,
           MessageConstants.loggedInSuccessfully,
         );
+        Navigator.pushReplacementNamed(
+          navigatorKey.currentContext!,
+          RouteConstants.pages,
+        );
+
         break;
       case LoginSatus.fail:
         SnackBarHelper.showErrorSnackBar(
-          context,
           MessageConstants.incorrectCredentials,
         );
         break;
       case LoginSatus.error:
         SnackBarHelper.showErrorSnackBar(
-          context,
           MessageConstants.anErrorOccured,
         );
         break;
       case LoginSatus.exception:
         SnackBarHelper.showErrorSnackBar(
-          context,
           MessageConstants.anErrorOccured,
         );
         break;
     }
   }
 
-  void saveToStorage(String phoneNumber, password) {
-    StorageService.phoneNumber = phoneNumber;
-    StorageService.password = password;
-    StorageService.isLoggedIn = true;
+  Future<void> saveToStorage(String phoneNumber, password) async {
+    await Future.wait([
+      StorageService.setPhoneNumber(phoneNumber),
+      StorageService.setPassword(password),
+      StorageService.setIsLoggedIn(true),
+    ]);
   }
 
   @override
@@ -243,7 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return CustomButton(
       onPressed: onSignUpButtonPressed,
       text: 'Üye Ol',
-      color: const Color(0xff673AB7),
+      color: const Color(0xffff8000),
       height: 48,
     );
   }

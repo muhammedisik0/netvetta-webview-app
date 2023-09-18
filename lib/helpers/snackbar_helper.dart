@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../utils/globals.dart';
+
 class SnackBarHelper {
-  static void showErrorSnackBar(BuildContext context, String text) {
+  static void showErrorSnackBar(String text) {
     final snackBar = SnackBar(
       backgroundColor: Colors.red,
       duration: const Duration(seconds: 3),
@@ -12,10 +14,10 @@ class SnackBarHelper {
       ),
     );
 
-    _show(context, snackBar);
+    _show(snackBar);
   }
 
-  static void showSuccessSnackBar(BuildContext context, String text) {
+  static void showSuccessSnackBar(String text) {
     final snackBar = SnackBar(
       backgroundColor: Colors.green,
       duration: const Duration(seconds: 3),
@@ -26,25 +28,12 @@ class SnackBarHelper {
       ),
     );
 
-    _show(context, snackBar);
+    _show(snackBar);
   }
 
-  static void showWarningSnackBar(BuildContext context, String text) {
-    final snackBar = SnackBar(
-      backgroundColor: const Color(0xffE4A11B),
-      duration: const Duration(seconds: 3),
-      behavior: SnackBarBehavior.floating,
-      content: Text(
-        text,
-        style: const TextStyle(fontSize: 16),
-      ),
-    );
-
-    _show(context, snackBar);
-  }
-
-  static void _show(BuildContext context, SnackBar snackBar) {
-    final scaffoldMessengerState = ScaffoldMessenger.of(context);
+  static void _show(SnackBar snackBar) {
+    final scaffoldMessengerState =
+        ScaffoldMessenger.of(navigatorKey.currentContext!);
     if (scaffoldMessengerState.mounted) {
       scaffoldMessengerState.hideCurrentSnackBar();
     }

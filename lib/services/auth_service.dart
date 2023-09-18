@@ -10,7 +10,7 @@ class AuthService {
   Future<LoginSatus> login(User user) async {
     try {
       final response = await http.post(
-        Uri.parse(ApiConstants.completeUrl),
+        Uri.parse(ApiConstants.loginUrl),
         body: user.toJson(),
       );
       if (response.statusCode == 200) {

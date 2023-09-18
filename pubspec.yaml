@@ -15,10 +15,11 @@ dependencies:
   webview_flutter: ^4.2.4
   http: ^1.1.0
   get_secure_storage: ^1.0.4
-  #flutter_no_internet_widget: ^1.0.0+18-dev.1
   font_awesome_flutter: ^10.5.0
   url_launcher: ^6.1.14
   connectivity_plus: ^4.0.2
+  flutter_local_notifications: ^15.1.1
+  workmanager: ^0.5.1
 
   cupertino_icons: ^1.0.2
 
