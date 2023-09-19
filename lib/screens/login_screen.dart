@@ -66,14 +66,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String get password => passwordController.text.trim();
 
-  void onLoginButtonPressed() {
+  Future<void> onLoginButtonPressed() async {
     if (phoneNumber.isEmpty || password.isEmpty) {
       SnackBarHelper.showErrorSnackBar(
         MessageConstants.fillInTheRequiredFields,
       );
       return;
     }
-    checkLoginStatus();
+
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: Colors.white,
+        ),
+      ),
+    );
+
+    final value = await loginStatus;
+    Navigator.of(context).pop();
+    checkLoginStatus(value);
   }
 
   Future<void> onSignUpButtonPressed() async {
@@ -114,8 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return await AuthService().login(user);
   }
 
-  Future<void> checkLoginStatus() async {
-    final value = await loginStatus;
+  Future<void> checkLoginStatus(LoginSatus value) async {
     switch (value) {
       case LoginSatus.success:
         await saveToStorage(phoneNumber, password);

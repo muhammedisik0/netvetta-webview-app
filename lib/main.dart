@@ -18,12 +18,6 @@ void callbackDispatcher() {
     await GetSecureStorage.init();
     await NotificationService().init();
 
-    await NotificationService().showNotification(
-      id: 99,
-      title: 'Test Bildirimi',
-      body: 'Test Bildirimi',
-    );
-
     var listOfNotifications = await ApiService().fetchNotifications();
     if (listOfNotifications != null) {
       final latestNotfId = int.parse(StorageService.latestNotificationId);
@@ -35,7 +29,7 @@ void callbackDispatcher() {
         if (notification.cariId == userId || notification.cariId == '0') {
           NotificationService().showNotification(
             id: int.parse(notification.id),
-            title: 'Bildirim ${notification.id}',
+            title: 'Netvetta',
             body: notification.content,
           );
         }

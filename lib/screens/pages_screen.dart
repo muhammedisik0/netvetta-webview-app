@@ -5,8 +5,10 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:netvetta/widgets/account_sub_buttons_widget.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../constants/api_constants.dart';
 import '../constants/color_constants.dart';
 import '../constants/route_constants.dart';
 import '../constants/uri_constants.dart';
@@ -34,6 +36,8 @@ class _PagesScreenState extends State<PagesScreen> {
   bool isLoading = true;
   late int userId;
 
+  bool showAccountSubButtons = false;
+
   /*Future<void> checkForNotification() async {
     NotificationAppLaunchDetails? details = await NotificationService()
         .notificationsPlugin
@@ -45,7 +49,7 @@ class _PagesScreenState extends State<PagesScreen> {
 
         if (response != null) {
           String? payload = response.payload;
-          log("Notification Payload: $payload");
+          log('Notification Payload: $payload');
         }
       }
     }
@@ -100,14 +104,7 @@ class _PagesScreenState extends State<PagesScreen> {
   }
 
   FutureOr<NavigationDecision> onNavigationRequest(request) async {
-    if (request.url == loginUrl) {
-      print('loginrequest');
-      //setState(() => isLoading = true);
-      //await Future.delayed(const Duration(seconds: 1));
-      await StorageService.clearStorage();
-      print('storagecleared');
-      //Navigator.pushReplacementNamed(context, RouteConstants.login);
-    } else if (request.url == homeUrl) {
+    if (request.url == homeUrl) {
       updateIndex(0);
     } else if (request.url == basketUrl) {
       updateIndex(1);
@@ -119,26 +116,18 @@ class _PagesScreenState extends State<PagesScreen> {
 
   void onPageStarted(String url) {
     checkIfFirstLogin(url);
-    if (url == loginUrl) {
-      print('loginurlstarting---------');
-    }
   }
 
   void onPageFinished(String url) {
     if (url == loginUrl) {
-      print('loginurlfinished------------');
-      if (StorageService.isLoggedIn) {
-        logInFromWebView();
-        print('loggedin: ${StorageService.isLoggedIn}');
-      } else {
-        print('navigatetologin----------');
-        Navigator.pushReplacementNamed(context, RouteConstants.login);
-      }
+      if (StorageService.isLoggedIn) logInFromWebView();
     }
-    checkIfStillLoading(url);
+
+    if (url.contains(homeUrl)) checkIfStillLoading(url);
   }
 
   void onNavBarButtonTap(int value) {
+    showAccountSubButtons = false;
     updateIndex(value);
     checkRequest(currentIndex);
     if (isLoading) setState(() => isLoading = false);
@@ -166,15 +155,14 @@ class _PagesScreenState extends State<PagesScreen> {
 
   void logInFromWebView() {
     final String javaScriptCode = '''
-      var phoneField = document.querySelector("input[name=tel]");
-      var passwordField = document.querySelector("input[name=parola]");
-      var loginButton = document.querySelector("button");
+      var phoneField = document.querySelector('input[name=tel]');
+      var passwordField = document.querySelector('input[name=parola]');
+      var loginButton = document.querySelector('button');
       phoneField.value = '${StorageService.phoneNumber}';
       passwordField.value = '${StorageService.password}';
       loginButton.click();
     ''';
     webViewController.runJavaScript(javaScriptCode);
-    //print('loginformwebvew--------');
   }
 
   void checkIfFirstLogin(String url) {
@@ -184,9 +172,23 @@ class _PagesScreenState extends State<PagesScreen> {
     }
   }
 
-  void checkIfStillLoading(String url) {
-    if (isLoading && url.contains(homeUrl)) {
+  Future<void> checkIfStillLoading(String url) async {
+    if (isLoading) {
+      await Future.delayed(const Duration(seconds: 1));
       setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> onLogOutButtonPressed() async {
+    if (hasInternet) {
+      await StorageService.clearStorage();
+      await loadRequest(ApiConstants.logOutUrl);
+      Navigator.pushReplacementNamed(
+        context,
+        RouteConstants.login,
+      );
+    } else {
+      onNavBarButtonTap(2);
     }
   }
 
@@ -214,7 +216,9 @@ class _PagesScreenState extends State<PagesScreen> {
 
   Widget get checkingWidget {
     return const Center(
-      child: CircularProgressIndicator(color: Colors.black),
+      child: CircularProgressIndicator(
+        color: Colors.black,
+      ),
     );
   }
 
@@ -247,28 +251,26 @@ class _PagesScreenState extends State<PagesScreen> {
             text: 'Sepet',
             isSelected: currentIndex == 1,
           ),
-          BottomNavBarItem(
-            onTap: () => onNavBarButtonTap(2),
-            icon: FontAwesomeIcons.solidUser,
-            text: 'Hesap',
-            isSelected: currentIndex == 2,
+          Visibility(
+            visible: !showAccountSubButtons,
+            replacement: accountSubButtons,
+            child: BottomNavBarItem(
+              onTap: () => setState(() => showAccountSubButtons = true),
+              icon: FontAwesomeIcons.solidCircleUser,
+              text: 'Hesap',
+              isSelected: currentIndex == 2,
+            ),
           ),
-          /*BottomNavBarItem(
-            onTap: () {
-              NotificationService().showNotification(
-                id: 3,
-                title: 'Title',
-                body: 'Body',
-                payLoad: 'Payload',
-              );
-              
-            },
-            icon: FontAwesomeIcons.airbnb,
-            text: 'Test',
-            isSelected: currentIndex == 3,
-          ),*/
         ],
       ),
+    );
+  }
+
+  Widget get accountSubButtons {
+    return AccountSubButtons(
+      onPersonalButtonPressed: () => onNavBarButtonTap(2),
+      onLogOutButtonPressed: onLogOutButtonPressed,
+      isSelected: currentIndex == 2,
     );
   }
 }
