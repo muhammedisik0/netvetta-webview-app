@@ -194,10 +194,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 loginButton,
                 const SizedBox(height: 10),
                 signUpButton,
-                const SizedBox(height: 20),
-                divider,
-                const SizedBox(height: 30),
-                whatIsNetvettaButton,
+                //const SizedBox(height: 20),
+                //divider,
+                //const SizedBox(height: 30),
+                //whatIsNetvettaButton,
               ],
             ),
           ),
@@ -259,22 +259,22 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Divider get divider {
+  /*Divider get divider {
     return const Divider(
       color: Color(0xffCCCCCC),
       thickness: 1,
       height: 0,
     );
-  }
+  }*/
 
-  Widget get whatIsNetvettaButton {
+  /*Widget get whatIsNetvettaButton {
     return CustomButton(
       onPressed: onWhatIsNetvettaButtonPressed,
       text: 'Netvetta Nedir?',
       color: const Color(0xff1565C0),
       height: 60,
     );
-  }
+  }*/
 
   Widget get socialButtons {
     return Row(
