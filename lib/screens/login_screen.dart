@@ -89,16 +89,14 @@ class _LoginScreenState extends State<LoginScreen> {
     checkLoginStatus(value);
   }
 
-  Future<void> onSignUpButtonPressed() async {
-    final uri = Uri.parse(UriConstants.signUp);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      throw 'Could not launch!';
-    }
+  void onSignUpButtonPressed() {
+    Navigator.pushNamed(
+      navigatorKey.currentContext!,
+      RouteConstants.register,
+    );
   }
 
-  void onWhatIsNetvettaButtonPressed() {}
+  //void onWhatIsNetvettaButtonPressed() {}
 
   Future<void> onInstagramButtonPressed() async {
     final uri = Uri.parse(UriConstants.instagram);
@@ -127,8 +125,8 @@ class _LoginScreenState extends State<LoginScreen> {
     return await AuthService().login(user);
   }
 
-  Future<void> checkLoginStatus(LoginSatus value) async {
-    switch (value) {
+  Future<void> checkLoginStatus(LoginSatus status) async {
+    switch (status) {
       case LoginSatus.success:
         await saveToStorage(phoneNumber, password);
         SnackBarHelper.showSuccessSnackBar(
@@ -138,7 +136,6 @@ class _LoginScreenState extends State<LoginScreen> {
           navigatorKey.currentContext!,
           RouteConstants.pages,
         );
-
         break;
       case LoginSatus.fail:
         SnackBarHelper.showErrorSnackBar(
