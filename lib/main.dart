@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_secure_storage/get_secure_storage.dart';
+import 'package:netvetta/screens/register_screen.dart';
 import 'package:netvetta/utils/globals.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -65,6 +66,7 @@ class MyApp extends StatelessWidget {
       initialRoute: RouteConstants.splash,
       routes: {
         RouteConstants.splash: (context) => const SplashScreen(),
+        RouteConstants.register: (context) => const RegisterScreen(),
         RouteConstants.login: (context) => const LoginScreen(),
         RouteConstants.pages: (context) => const PagesScreen(),
       },
