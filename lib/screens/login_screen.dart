@@ -1,8 +1,5 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,58 +12,29 @@ import '../constants/uri_constants.dart';
 import '../helpers/snackbar_helper.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
-import '../services/connectivity_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_textfield_widget.dart';
-import '../widgets/no_internet_widget.dart';
+import '../widgets/internet_connectivity_widget.dart';
 import '../widgets/social_button.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
-
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final connectivityService = ConnectivityService();
-  late StreamSubscription<ConnectivityResult> connectivitySubscription;
-  bool hasInternet = true;
+class LoginScreen extends StatelessWidget {
+  LoginScreen({Key? key}) : super(key: key);
 
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    checkInternetOnInit();
-    connectivitySubscription =
-        connectivityService.connectivityStream.listen(onResult);
-  }
-
-  @override
-  void dispose() {
-    connectivitySubscription.cancel();
-    super.dispose();
-  }
-
-  Future<void> checkInternetOnInit() async {
-    final result = await connectivityService.connectivityResult;
-    final value = connectivityService.hasInternet(result);
-    if (!value) setState(() => hasInternet = value);
-  }
-
-  void onResult(ConnectivityResult result) {
-    final value = connectivityService.hasInternet(result);
-    setState(() => hasInternet = value);
-  }
+  final netvettaTextStyle = const TextStyle(
+    fontWeight: FontWeight.w500,
+    fontSize: 28,
+    color: Colors.black,
+    letterSpacing: 1.2,
+  );
 
   String get phoneNumber => phoneNumberController.text.trim();
-
   String get password => passwordController.text.trim();
 
-  Future<void> onLoginButtonPressed() async {
+  Future<void> onLoginPressed() async {
     if (phoneNumber.isEmpty || password.isEmpty) {
       SnackBarHelper.showErrorSnackBar(
         MessageConstants.fillInTheRequiredFields,
@@ -76,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     showDialog(
       barrierDismissible: false,
-      context: context,
+      context: navigatorKey.currentContext!,
       builder: (context) => const Center(
         child: CircularProgressIndicator(
           color: Colors.white,
@@ -84,21 +52,19 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
 
-    final value = await loginStatus;
-    Navigator.of(context).pop();
-    checkLoginStatus(value);
+    final status = await loginStatus;
+    Navigator.of(navigatorKey.currentContext!).pop();
+    checkLoginStatus(status);
   }
 
-  void onSignUpButtonPressed() {
+  void onSignUpPressed() {
     Navigator.pushNamed(
       navigatorKey.currentContext!,
-      RouteConstants.register,
+      RouteConstants.signUp,
     );
   }
 
-  //void onWhatIsNetvettaButtonPressed() {}
-
-  Future<void> onInstagramButtonPressed() async {
+  Future<void> onInstagramPressed() async {
     final uri = Uri.parse(UriConstants.instagram);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -107,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> onFacebookButtonPressed() async {
+  Future<void> onFacebookPressed() async {
     final uri = Uri.parse(UriConstants.facebook);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -117,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<LoginSatus> get loginStatus async {
-    final User user = User(
+    final user = User(
       kk: 'netvetta',
       phoneNumber: phoneNumber,
       password: password,
@@ -128,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> checkLoginStatus(LoginSatus status) async {
     switch (status) {
       case LoginSatus.success:
-        await saveToStorage(phoneNumber, password);
+        await storeUserDataLocally(phoneNumber, password);
         SnackBarHelper.showSuccessSnackBar(
           MessageConstants.loggedInSuccessfully,
         );
@@ -155,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> saveToStorage(String phoneNumber, password) async {
+  Future<void> storeUserDataLocally(String phoneNumber, password) async {
     await Future.wait([
       StorageService.setPhoneNumber(phoneNumber),
       StorageService.setPassword(password),
@@ -167,9 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: SafeArea(
-        child: hasInternet ? onlineWidget : offlineWidget,
-      ),
+      body: SafeArea(child: InternetConnectivityWidget(online: onlineWidget)),
     );
   }
 
@@ -182,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                netvettaLogo,
+                netvettaText,
                 const SizedBox(height: 40),
                 phoneNumberField,
                 const SizedBox(height: 20),
@@ -191,10 +155,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 loginButton,
                 const SizedBox(height: 10),
                 signUpButton,
-                //const SizedBox(height: 20),
-                //divider,
-                //const SizedBox(height: 30),
-                //whatIsNetvettaButton,
               ],
             ),
           ),
@@ -204,17 +164,10 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget get offlineWidget => const NoInternetWidget();
-
-  Widget get netvettaLogo {
-    return const Text(
+  Widget get netvettaText {
+    return Text(
       'NETVETTA',
-      style: TextStyle(
-        fontWeight: FontWeight.w500,
-        fontSize: 28,
-        color: Colors.black,
-        letterSpacing: 1.2,
-      ),
+      style: netvettaTextStyle,
     );
   }
 
@@ -224,7 +177,6 @@ class _LoginScreenState extends State<LoginScreen> {
       hintText: '(502xxxxxxx)',
       obscureText: false,
       inputAction: TextInputAction.next,
-      //maxLength: 10,
     );
   }
 
@@ -234,13 +186,12 @@ class _LoginScreenState extends State<LoginScreen> {
       hintText: 'Şifre',
       obscureText: true,
       inputAction: TextInputAction.done,
-      //maxLength: 4,
     );
   }
 
   Widget get loginButton {
     return CustomButton(
-      onPressed: onLoginButtonPressed,
+      onPressed: onLoginPressed,
       text: 'Giriş',
       color: const Color(0xff009688),
       height: 48,
@@ -249,42 +200,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget get signUpButton {
     return CustomButton(
-      onPressed: onSignUpButtonPressed,
+      onPressed: onSignUpPressed,
       text: 'Üye Ol',
       color: const Color(0xffff8000),
       height: 48,
     );
   }
 
-  /*Divider get divider {
-    return const Divider(
-      color: Color(0xffCCCCCC),
-      thickness: 1,
-      height: 0,
-    );
-  }*/
-
-  /*Widget get whatIsNetvettaButton {
-    return CustomButton(
-      onPressed: onWhatIsNetvettaButtonPressed,
-      text: 'Netvetta Nedir?',
-      color: const Color(0xff1565C0),
-      height: 60,
-    );
-  }*/
-
   Widget get socialButtons {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SocialButton(
-          onPressed: onInstagramButtonPressed,
+          onPressed: onInstagramPressed,
           icon: FontAwesomeIcons.instagram,
           color: const Color(0xffc2185b),
         ),
         const SizedBox(width: 20),
         SocialButton(
-          onPressed: onFacebookButtonPressed,
+          onPressed: onFacebookPressed,
           icon: FontAwesomeIcons.facebook,
           color: const Color(0xff1877F2),
         ),

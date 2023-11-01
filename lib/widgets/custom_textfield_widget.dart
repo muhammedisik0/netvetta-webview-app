@@ -6,23 +6,20 @@ class CustomTextField extends StatelessWidget {
     Key? key,
     required this.controller,
     required this.hintText,
-    required this.obscureText,
+    this.obscureText = false,
     required this.inputAction,
-    //required this.maxLength,
   }) : super(key: key);
 
   final TextEditingController controller;
   final String hintText;
   final bool obscureText;
   final TextInputAction inputAction;
-  //final int maxLength;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       cursorColor: Colors.black,
       obscureText: obscureText,
-      //maxLength: maxLength,
       inputFormatters: [
         FilteringTextInputFormatter.deny(RegExp(r'\s')), // Deny spaces
       ],

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_secure_storage/get_secure_storage.dart';
-import 'package:netvetta/screens/register_screen.dart';
+import 'package:netvetta/screens/sign_up_screen.dart';
 import 'package:netvetta/utils/globals.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -63,11 +63,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
-      initialRoute: RouteConstants.splash,
+      initialRoute: RouteConstants.initialRoute,
       routes: {
-        RouteConstants.splash: (context) => const SplashScreen(),
-        RouteConstants.register: (context) => const RegisterScreen(),
-        RouteConstants.login: (context) => const LoginScreen(),
+        RouteConstants.initialRoute: (context) => const SplashScreen(),
+        RouteConstants.login: (context) => LoginScreen(),
+        RouteConstants.signUp: (context) => const SignUpScreen(),
         RouteConstants.pages: (context) => const PagesScreen(),
       },
     );
