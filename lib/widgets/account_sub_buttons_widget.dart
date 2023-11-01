@@ -5,13 +5,13 @@ import 'package:netvetta/widgets/bottom_navbar_item.dart';
 class AccountSubButtons extends StatelessWidget {
   const AccountSubButtons({
     super.key,
-    required this.onPersonalButtonPressed,
-    required this.onLogOutButtonPressed,
+    required this.onPersonalPressed,
+    required this.onLogOutPressed,
     required this.isSelected,
   });
 
-  final Function() onPersonalButtonPressed;
-  final Function() onLogOutButtonPressed;
+  final Function() onPersonalPressed;
+  final Function() onLogOutPressed;
   final bool isSelected;
 
   @override
@@ -19,7 +19,7 @@ class AccountSubButtons extends StatelessWidget {
     return Row(
       children: [
         BottomNavBarItem(
-          onTap: onPersonalButtonPressed,
+          onTap: onPersonalPressed,
           isSelected: isSelected,
           icon: FontAwesomeIcons.solidUser,
           text: 'Kişisel',
@@ -33,7 +33,7 @@ class AccountSubButtons extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 10),
         ),
         BottomNavBarItem(
-          onTap: onLogOutButtonPressed,
+          onTap: onLogOutPressed,
           isSelected: isSelected,
           icon: FontAwesomeIcons.arrowRightFromBracket,
           text: 'Çıkış',

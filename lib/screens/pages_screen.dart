@@ -2,22 +2,21 @@
 
 import 'dart:async';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:netvetta/widgets/account_sub_buttons_widget.dart';
+import 'package:netvetta/utils/globals.dart';
+import 'package:netvetta/widgets/internet_connectivity_widget.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../widgets/account_sub_buttons_widget.dart';
 import '../constants/api_constants.dart';
 import '../constants/color_constants.dart';
 import '../constants/route_constants.dart';
 import '../constants/uri_constants.dart';
-import '../services/connectivity_service.dart';
 import '../services/storage_service.dart';
 import '../utils/function_utils.dart';
 import '../widgets/bottom_navbar_item.dart';
 import '../widgets/loading_widget.dart';
-import '../widgets/no_internet_widget.dart';
 
 class PagesScreen extends StatefulWidget {
   const PagesScreen({Key? key}) : super(key: key);
@@ -27,9 +26,7 @@ class PagesScreen extends StatefulWidget {
 }
 
 class _PagesScreenState extends State<PagesScreen> {
-  final connectivityService = ConnectivityService();
-  late StreamSubscription<ConnectivityResult> connectivitySubscription;
-  bool hasInternet = true;
+  bool hasInternet = false;
 
   late final WebViewController webViewController;
   int currentIndex = 0;
@@ -38,56 +35,20 @@ class _PagesScreenState extends State<PagesScreen> {
 
   bool showAccountSubButtons = false;
 
-  /*Future<void> checkForNotification() async {
-    NotificationAppLaunchDetails? details = await NotificationService()
-        .notificationsPlugin
-        .getNotificationAppLaunchDetails();
-
-    if (details != null) {
-      if (details.didNotificationLaunchApp) {
-        NotificationResponse? response = details.notificationResponse;
-
-        if (response != null) {
-          String? payload = response.payload;
-          log('Notification Payload: $payload');
-        }
-      }
-    }
-  }*/
-
   @override
   void initState() {
     super.initState();
+    internetNotifier.addListener(() {
+      checkRequest(currentIndex);
+    });
+
     userId = StorageService.userId;
-
-    checkInternetOnInit();
-
-    connectivitySubscription =
-        connectivityService.connectivityStream.listen(onResult);
 
     webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(navigationDelegate)
       ..loadRequest(Uri.parse(loginUrl));
-  }
-
-  @override
-  void dispose() {
-    connectivitySubscription.cancel();
-    super.dispose();
-  }
-
-  Future<void> checkInternetOnInit() async {
-    final result = await connectivityService.connectivityResult;
-    final bool value = connectivityService.hasInternet(result);
-    setState(() => hasInternet = value);
-  }
-
-  void onResult(ConnectivityResult result) {
-    final value = connectivityService.hasInternet(result);
-    setState(() => hasInternet = value);
-    checkRequest(currentIndex);
   }
 
   String get loginUrl => UriConstants.login;
@@ -122,11 +83,10 @@ class _PagesScreenState extends State<PagesScreen> {
     if (url == loginUrl) {
       if (StorageService.isLoggedIn) logInFromWebView();
     }
-
     if (url.contains(homeUrl)) checkIfStillLoading(url);
   }
 
-  void onNavBarButtonTap(int value) {
+  void onNavigationBarTap(int value) {
     showAccountSubButtons = false;
     updateIndex(value);
     checkRequest(currentIndex);
@@ -179,16 +139,13 @@ class _PagesScreenState extends State<PagesScreen> {
     }
   }
 
-  Future<void> onLogOutButtonPressed() async {
-    if (hasInternet) {
+  Future<void> onLogOutPressed() async {
+    if (internetNotifier.value) {
       await StorageService.clearStorage();
       await loadRequest(ApiConstants.logOutUrl);
-      Navigator.pushReplacementNamed(
-        context,
-        RouteConstants.login,
-      );
+      Navigator.pushReplacementNamed(context, RouteConstants.login);
     } else {
-      onNavBarButtonTap(2);
+      onNavigationBarTap(2);
     }
   }
 
@@ -202,7 +159,7 @@ class _PagesScreenState extends State<PagesScreen> {
 
   Widget get body {
     return SafeArea(
-      child: hasInternet ? onlineWidget : offlineWidget,
+      child: InternetConnectivityWidget(online: onlineWidget),
     );
   }
 
@@ -210,16 +167,6 @@ class _PagesScreenState extends State<PagesScreen> {
     return isLoading
         ? const LoadingWidget()
         : WebViewWidget(controller: webViewController);
-  }
-
-  Widget get offlineWidget => const NoInternetWidget();
-
-  Widget get checkingWidget {
-    return const Center(
-      child: CircularProgressIndicator(
-        color: Colors.black,
-      ),
-    );
   }
 
   Widget get bottomNavigationBar {
@@ -240,13 +187,13 @@ class _PagesScreenState extends State<PagesScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           BottomNavBarItem(
-            onTap: () => onNavBarButtonTap(0),
+            onTap: () => onNavigationBarTap(0),
             icon: FontAwesomeIcons.house,
             text: 'Ana Sayfa',
             isSelected: currentIndex == 0,
           ),
           BottomNavBarItem(
-            onTap: () => onNavBarButtonTap(1),
+            onTap: () => onNavigationBarTap(1),
             icon: FontAwesomeIcons.basketShopping,
             text: 'Sepet',
             isSelected: currentIndex == 1,
@@ -268,8 +215,8 @@ class _PagesScreenState extends State<PagesScreen> {
 
   Widget get accountSubButtons {
     return AccountSubButtons(
-      onPersonalButtonPressed: () => onNavBarButtonTap(2),
-      onLogOutButtonPressed: onLogOutButtonPressed,
+      onPersonalPressed: () => onNavigationBarTap(2),
+      onLogOutPressed: onLogOutPressed,
       isSelected: currentIndex == 2,
     );
   }
