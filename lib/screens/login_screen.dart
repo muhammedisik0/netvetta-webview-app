@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:netvetta/constants/color_constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../utils/globals.dart';
@@ -21,21 +22,16 @@ import '../widgets/social_button.dart';
 class LoginScreen extends StatelessWidget {
   LoginScreen({Key? key}) : super(key: key);
 
+  final TextEditingController userCodeController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  final netvettaTextStyle = const TextStyle(
-    fontWeight: FontWeight.w500,
-    fontSize: 28,
-    color: Colors.black,
-    letterSpacing: 1.2,
-  );
-
+  String get userCode => userCodeController.text.trim();
   String get phoneNumber => phoneNumberController.text.trim();
   String get password => passwordController.text.trim();
 
-  Future<void> onLoginPressed() async {
-    if (phoneNumber.isEmpty || password.isEmpty) {
+  Future<void> onLoginButtonPressed() async {
+    if (userCode.isEmpty || phoneNumber.isEmpty || password.isEmpty) {
       SnackBarHelper.showErrorSnackBar(
         MessageConstants.fillInTheRequiredFields,
       );
@@ -57,14 +53,14 @@ class LoginScreen extends StatelessWidget {
     checkLoginStatus(status);
   }
 
-  void onSignUpPressed() {
+  void onSignUpButtonPressed() {
     Navigator.pushNamed(
       navigatorKey.currentContext!,
       RouteConstants.signUp,
     );
   }
 
-  Future<void> onInstagramPressed() async {
+  Future<void> onInstagramButtonPressed() async {
     final uri = Uri.parse(UriConstants.instagram);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -73,7 +69,7 @@ class LoginScreen extends StatelessWidget {
     }
   }
 
-  Future<void> onFacebookPressed() async {
+  Future<void> onFacebookButtonPressed() async {
     final uri = Uri.parse(UriConstants.facebook);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -84,17 +80,17 @@ class LoginScreen extends StatelessWidget {
 
   Future<LoginSatus> get loginStatus async {
     final user = User(
-      kk: 'netvetta',
+      kk: userCode,
       phoneNumber: phoneNumber,
       password: password,
     );
-    return await AuthService().login(user);
+    return AuthService().logIn(user);
   }
 
   Future<void> checkLoginStatus(LoginSatus status) async {
     switch (status) {
       case LoginSatus.success:
-        await storeUserDataLocally(phoneNumber, password);
+        await storeUserDataLocally();
         SnackBarHelper.showSuccessSnackBar(
           MessageConstants.loggedInSuccessfully,
         );
@@ -121,8 +117,9 @@ class LoginScreen extends StatelessWidget {
     }
   }
 
-  Future<void> storeUserDataLocally(String phoneNumber, password) async {
-    await Future.wait([
+  Future<void> storeUserDataLocally() async {
+    Future.wait([
+      StorageService.setUserCode(userCode),
       StorageService.setPhoneNumber(phoneNumber),
       StorageService.setPassword(password),
       StorageService.setIsLoggedIn(true),
@@ -148,6 +145,8 @@ class LoginScreen extends StatelessWidget {
               children: [
                 netvettaText,
                 const SizedBox(height: 40),
+                userCodeField,
+                const SizedBox(height: 20),
                 phoneNumberField,
                 const SizedBox(height: 20),
                 passwordField,
@@ -165,9 +164,21 @@ class LoginScreen extends StatelessWidget {
   }
 
   Widget get netvettaText {
-    return Text(
-      'NETVETTA',
-      style: netvettaTextStyle,
+    return const Text(
+      'Netvetta Mağazam',
+      style: TextStyle(
+        fontSize: 28,
+        fontWeight: FontWeight.w500,
+        color: Colors.black,
+      ),
+    );
+  }
+
+  Widget get userCodeField {
+    return CustomTextField(
+      controller: userCodeController,
+      hintText: 'Kullanıcı Kodu',
+      inputAction: TextInputAction.next,
     );
   }
 
@@ -175,8 +186,8 @@ class LoginScreen extends StatelessWidget {
     return CustomTextField(
       controller: phoneNumberController,
       hintText: '(502xxxxxxx)',
-      obscureText: false,
       inputAction: TextInputAction.next,
+      keyboardType: TextInputType.number,
     );
   }
 
@@ -186,12 +197,13 @@ class LoginScreen extends StatelessWidget {
       hintText: 'Şifre',
       obscureText: true,
       inputAction: TextInputAction.done,
+      keyboardType: TextInputType.number,
     );
   }
 
   Widget get loginButton {
     return CustomButton(
-      onPressed: onLoginPressed,
+      onPressed: onLoginButtonPressed,
       text: 'Giriş',
       color: const Color(0xff009688),
       height: 48,
@@ -200,7 +212,7 @@ class LoginScreen extends StatelessWidget {
 
   Widget get signUpButton {
     return CustomButton(
-      onPressed: onSignUpPressed,
+      onPressed: onSignUpButtonPressed,
       text: 'Üye Ol',
       color: const Color(0xffff8000),
       height: 48,
@@ -212,13 +224,13 @@ class LoginScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SocialButton(
-          onPressed: onInstagramPressed,
+          onPressed: onInstagramButtonPressed,
           icon: FontAwesomeIcons.instagram,
           color: const Color(0xffc2185b),
         ),
         const SizedBox(width: 20),
         SocialButton(
-          onPressed: onFacebookPressed,
+          onPressed: onFacebookButtonPressed,
           icon: FontAwesomeIcons.facebook,
           color: const Color(0xff1877F2),
         ),

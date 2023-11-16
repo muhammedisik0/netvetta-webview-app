@@ -19,7 +19,8 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    appLogo = Image.asset('assets/images/app-logo.png', width: 240);
+    const String appIcon = 'assets/icons/app_icon.png';
+    appLogo = Image.asset(appIcon, width: 240);
     final route =
         StorageService.isLoggedIn ? RouteConstants.pages : RouteConstants.login;
     Timer(const Duration(seconds: 2), () {
@@ -36,8 +37,32 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: ColorConstants.primaryColor,
-      child: Center(child: appLogo),
+      color: ColorConstants.slateBlue,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          appLogo,
+          netvettaMagazamText,
+        ],
+      ),
+    );
+  }
+
+  Widget get netvettaMagazamText {
+    return const SizedBox(
+      width: 160,
+      child: FittedBox(
+        child: Text(
+          'NETVETTA\nMAĞAZAM',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: ColorConstants.goldenYellow,
+            letterSpacing: 1.2,
+            decoration: TextDecoration.none,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
     );
   }
 }

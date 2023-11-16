@@ -1,7 +1,7 @@
 class UriConstants {
   UriConstants._();
 
-  static const String base = 'https://netvetta.com';
+  static const String base = 'https://netvetta.net';
 
   static const String login = '$base/login';
 

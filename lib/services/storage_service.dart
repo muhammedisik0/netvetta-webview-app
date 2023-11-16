@@ -10,6 +10,11 @@ class StorageService {
 
   static String get password => _storage.read('password') ?? '';
 
+  static Future<void> setUserCode(String value) async =>
+      await _storage.write('userCode', value);
+
+  static String get userCode => _storage.read('userCode') ?? '';
+
   static Future<void> setPassword(String value) async =>
       await _storage.write('password', value);
 
