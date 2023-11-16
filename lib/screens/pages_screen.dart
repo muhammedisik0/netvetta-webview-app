@@ -115,9 +115,11 @@ class _PagesScreenState extends State<PagesScreen> {
 
   void logInFromWebView() {
     final String javaScriptCode = '''
+      var userCodeField = document.querySelector('input[name=kk]');
       var phoneField = document.querySelector('input[name=tel]');
       var passwordField = document.querySelector('input[name=parola]');
       var loginButton = document.querySelector('button');
+      userCodeField.value = '${StorageService.userCode}';
       phoneField.value = '${StorageService.phoneNumber}';
       passwordField.value = '${StorageService.password}';
       loginButton.click();
@@ -173,7 +175,7 @@ class _PagesScreenState extends State<PagesScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: const BoxDecoration(
-        color: ColorConstants.primaryColor,
+        color: ColorConstants.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
           BoxShadow(

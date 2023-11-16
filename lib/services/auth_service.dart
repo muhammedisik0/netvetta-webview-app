@@ -7,7 +7,7 @@ import '../constants/enum_constants.dart';
 import '../models/user_model.dart';
 
 class AuthService {
-  Future<LoginSatus> login(User user) async {
+  Future<LoginSatus> logIn(User user) async {
     try {
       final response = await http.post(
         Uri.parse(ApiConstants.loginUrl),
